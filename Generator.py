@@ -2,6 +2,7 @@ import csv
 import os
 
 import re
+import shutil
 
 
 class Const:
@@ -226,6 +227,35 @@ class RemoveResultThreadCSV(DirectoryAction):
 
 
 class ScanParticlesDir(DirectoryAction):
+    results_directory = 'stats'
+
+    def is_valid_subdirectory(self, dir_name):
+        return dir_name.startswith(Const.particles_prefix)
+
+    def set_result_directory(self, results_directory):
+        self.results_directory = results_directory
+
+    def after(self):
+        res_dir = os.path.abspath(self.results_directory)
+        if not os.path.exists(self.results_directory):
+            print('Creating {} directory'.format(res_dir))
+            os.makedirs(self.results_directory)
+
+        for d in self.get_valid_directories():
+            # particles number
+            base = os.path.basename(d)
+
+            # filename in particle_ directory
+            particle_res_file = os.path.join(d, Const.particles_result_csv)
+
+            # copied file path
+            stats_res_file = os.path.join(res_dir, base + '.csv')
+
+            if os.path.exists(particle_res_file):
+                shutil.copy(particle_res_file, stats_res_file)
+
+
+class CleanParticlesDir(DirectoryAction):
     def is_valid_subdirectory(self, dir_name):
         return dir_name.startswith(Const.particles_prefix)
 
@@ -236,16 +266,17 @@ class Runner:
         run_dir_scanners = [RemoveResultRunCSV(), ScanRunDirs()]
         thread_dir_scanners = [RemoveResultThreadCSV(), ScanThreadsDir(run_dir_scanners)]
         particles_dir_scanners = ScanParticlesDir(thread_dir_scanners)
+        # particles_dir_scanners.set_result_directory('results/stats')
         particles_dir_scanners.run(experiment_directory)
 
     @staticmethod
     def clean(experiment_directory='results'):
         run_dir_scanners = [RemoveResultRunCSV()]
         thread_dir_scanners = [RemoveResultThreadCSV(run_dir_scanners)]
-        particles_dir_scanners = ScanParticlesDir(thread_dir_scanners)
+        particles_dir_scanners = CleanParticlesDir(thread_dir_scanners)
         particles_dir_scanners.run(experiment_directory)
 
 
 if __name__ == '__main__':
-    Runner.clean_run('/home/jarema/Documents/Codes/Python/datacollector/results')
-    Runner.clean('/home/jarema/Documents/Codes/Python/datacollector/results')
+    Runner.clean_run('results')
+    Runner.clean('results')
