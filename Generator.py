@@ -3,6 +3,8 @@ import os
 
 import re
 import shutil
+import sys
+from enum import Enum
 
 
 class Const:
@@ -108,6 +110,8 @@ class ScanRunDirs(DirectoryAction):
             dir_path = os.path.join(self.current_dir, o)
             if o.startswith(Const.run_dir_prefix) and os.path.isdir(dir_path):
                 status = self.get_last_status_file(dir_path)
+                if status is None:
+                    continue
                 run_info = self.parse_status(status)
                 run_info.name = o
                 results.append(run_info)
@@ -143,6 +147,9 @@ class ScanRunDirs(DirectoryAction):
 
     def parse_status(self, status_path):
         run_info = RunInfo()
+
+        run_info.collect_time = self.find_collect_time(status_path)
+
         with open(status_path) as fp:
             var = [self.remove_multiple_spaces(row).strip() for row in fp if (row[0] != '#')]
             reader = csv.DictReader(var, delimiter=' ')
@@ -156,11 +163,39 @@ class ScanRunDirs(DirectoryAction):
 
         return run_info
 
+    def find_collect_time(self, file_path):
+        collection_header_pattern = r".*?COLLECT INFORMATION"
+        collection_time_pattern = r"# TIME IN SECONDS =.*?(\d+)"
+
+        header_regex = re.compile(collection_header_pattern)
+        time_regex = re.compile(collection_time_pattern)
+
+        class RegexAction(Enum):
+            FIND_HEADER = header_regex
+            FIND_COLLECTION_TIME = time_regex
+
+        regex_action = RegexAction.FIND_HEADER
+        with open(file_path) as fp:
+            for row in fp:
+                if regex_action.value.match(row):
+                    if regex_action == RegexAction.FIND_HEADER:
+                        regex_action = RegexAction.FIND_COLLECTION_TIME
+
+                if regex_action.value.match(row):
+                    if regex_action == RegexAction.FIND_COLLECTION_TIME:
+                        collection_time = regex_action.value.findall(row)[0]
+                        return int(collection_time)
+            return 0
+
     def remove_multiple_spaces(self, text):
         return re.sub(' +', ' ', text)
 
     def get_last_status_file(self, dir_path):
-        return sorted([status for status in self.get_all_status_files(dir_path)])[-1]
+        sorted_statuses = sorted([status for status in self.get_all_status_files(dir_path)])
+        if sorted_statuses and len(sorted_statuses) > 0:
+            return sorted_statuses[-1]
+        else:
+            return None
 
     def get_all_status_files(self, dir_path):
         for o in os.listdir(dir_path):
@@ -204,6 +239,8 @@ class ScanThreadsDir(DirectoryAction):
         return min_time, max_time, avg_time, collect_time
 
     def average_from_list(self, _list):
+        if len(_list) == 0:
+            return 0
         return sum(_list)/len(_list)
 
     def save_average_values_to_csv(self, results):
@@ -278,5 +315,10 @@ class Runner:
 
 
 if __name__ == '__main__':
-    Runner.clean_run('results')
-    Runner.clean('results')
+    if len(sys.argv) > 1:
+        directory_name = sys.argv[1]
+    else:
+        directory_name = 'results'
+
+    Runner.clean_run(directory_name)
+    # Runner.clean('results')
