@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 function usage () {
    cat <<EOF
 Usage: $0 -i <directory>
@@ -7,6 +8,10 @@ where:
     -i <path> path to directory with workspaces
 EOF
    exit 0
+}
+
+my_date() {
+    echo -n `date '+%Y-%m-%d %H:%M:%S'`
 }
 
 INPUT=""
@@ -45,40 +50,43 @@ START_PWD=$PWD
 cd $INPUT
 for PART_DIR in *
 do
-    echo $PART_DIR
+    echo "[$(my_date)]$PART_DIR"
     cd $PART_DIR
     for TH_DIR in *
     do
-        echo -e "\t$TH_DIR"
+        echo -e "[$(my_date)]\t$TH_DIR"
         THREADS=$(echo $TH_DIR | sed 's/[^0-9]*//g')
-        echo -e "\tWorking for $THREADS threads"
+        echo -e "[$(my_date)]\tWorking for $THREADS threads"
         cd $TH_DIR
         for RUN_DIR in *
         do
-             echo -e "\t\t$RUN_DIR"
+             echo -e "[$(my_date)]\t\t$RUN_DIR"
              cd $RUN_DIR
                  SQUEUE=$(squeue)
                  while [[ $SQUEUE = *"]"*  ]] ; do
-                     echo -e "\t\t\tWaiting for all jobs to be in running state"
+                     echo -e "[$(my_date)]\t\t\tWaiting for all jobs to be in running state"
                      sleep 15
                      SQUEUE=$(squeue)
                  done
                  NR_JOBS=$(squeue | wc -l)
-                 echo -e "\t\t\tThere are $(($NR_JOBS - 1)) jobs running"
+                 echo -e "[$(my_date)]\t\t\tThere are $(($NR_JOBS - 1)) jobs running"
                  SUM=$(((NR_JOBS - 1 ) + $THREADS))
-                 echo -e "\t\t\tBut we want to run next $THREADS so sum=$SUM"
+                 echo -e "[$(my_date)]\t\t\tBut we want to run next $THREADS so sum=$SUM"
                  while [ $SUM -gt $LIMIT ] ; do
-                     echo -e "\t\t\tTo many jobs would be lunched, have to wait for some jobs to finish.."
-                     sleep 120
+                     for i in {1..1200}; do
+                     echo -e -n "\r[$(my_date)]\t\t\tTo many jobs would be lunched, have to wait for some jobs to finish.."
+                     sleep 1
+                     done
+             
                      NR_JOBS=$(squeue | wc -l)
-                     echo -e "\t\t\tThere are $(($NR_JOBS - 1)) jobs running"
+                     echo -e "\n[$(my_date)]\t\t\tThere are $(($NR_JOBS - 1)) jobs running"
                      SUM=$(((NR_JOBS - 1 ) + $THREADS))
-                     echo -e "\t\t\tBut we want to run next $THREADS so sum=$SUM"
+                     echo -e "[$(my_date)]\t\t\tBut we want to run next $THREADS so sum=$SUM"
                  done
              
              out=$(./submit.sh)
-             echo -e "\t\t\t$out"
-             echo -e "\t\t\tSubmited for $RUN_DIR"
+             echo -e "[$(my_date)]\t\t\t$out"
+             echo -e "[$(my_date)]\t\t\tSubmited for $RUN_DIR"
              cd ..
         done
         cd ..
