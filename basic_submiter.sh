@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Exit immediately if a simple command exits with a non-zero status.
-set -e
-
 function usage () {
    cat <<EOF
 Usage: $0 -i <directory>
