@@ -1,0 +1,3 @@
+1. Dziwna rzecz ale czasami jak odpale duzo zadan to poweidzmy 600 sie zrobi podobnie szybko
+ a pozostale np 100 liczy sie wolniej ale w podobnym czasie. Wiec jak zadanie powinno sie liczyc teoretycznie
+1 min i ustawimy walltime 1:30 to 600 zadan sie policzy a pozostale 100 sie ubije i troche lipa jest. 
