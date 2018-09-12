@@ -1,0 +1,4 @@
+liczba czastek:1000000
+wykres: https://plot.ly/~leskiw77/11/
+sek/watek: 0.74 (100 watkow) 0.05 (400) 0.014 (775)
+
