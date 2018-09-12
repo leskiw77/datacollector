@@ -135,9 +135,16 @@ class ScanRunDirs(DirectoryAction):
                 for key, value in info.job_times.items():
                     row['job_' + str(key)] = value
 
-                min_time = min(info.job_times.values())
-                max_time = max(info.job_times.values())
-                avg_time = sum(info.job_times.values())/len(info.job_times.values())
+                try:
+                    min_time = min(info.job_times.values())
+                    max_time = max(info.job_times.values())
+                    avg_time = sum(info.job_times.values())/len(info.job_times.values())
+                except ValueError as e:
+                    print(e)
+                    print('Value Error thrown when saving to {} '.format(file_name))
+                    min_time = -1
+                    max_time = -1
+                    avg_time = -1
 
                 row['minimum'] = min_time
                 row['maximum'] = max_time
