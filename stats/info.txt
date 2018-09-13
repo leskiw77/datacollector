@@ -1,3 +1,6 @@
+liczba czastek: 100 000
+wykres: https://plot.ly/~Kudy/8
+
 liczba czastek: 500 000
 wykres: https://plot.ly/~Kudy/6
 
