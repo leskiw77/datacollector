@@ -5,6 +5,7 @@ import re
 import shutil
 import sys
 from enum import Enum
+from dateutil import parser
 
 
 class Const:
@@ -15,6 +16,7 @@ class Const:
     thread_number_pattern = r'threads_(\d+)'
     thread_prefix = 'threads_'
     particles_prefix = 'particles_'
+    submission_log = 'submit.log'
 
 
 class Utils:
@@ -84,6 +86,7 @@ class RunInfo:
     def __init__(self):
         self.job_times = dict()
         self.collect_time: int = 0
+        self.submit_time = 0
         self.name = ''
 
     def add_job_time(self, job_id, job_time):
@@ -120,8 +123,9 @@ class ScanRunDirs(DirectoryAction):
 
     def save_results_to_csv(self, file_name, run_info: [RunInfo]):
         with open(file_name, 'w') as csv_file:
-            fieldnames = ['name'] + ['job_' + str(number + 1) for number in range(Utils.extract_thread_number(self.current_dir))] + [
-                'collect_time', 'minimum', 'maximum', 'average']
+            fieldnames = ['name'] + ['job_' + str(number + 1) for number in
+                                     range(Utils.extract_thread_number(self.current_dir))] + [
+                             'collect_time', 'minimum', 'maximum', 'average', 'submit_time']
 
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
@@ -131,6 +135,7 @@ class ScanRunDirs(DirectoryAction):
                 row = dict()
                 row['name'] = info.name
                 row['collect_time'] = info.collect_time
+                row['submit_time'] = info.submit_time
 
                 for key, value in info.job_times.items():
                     row['job_' + str(key)] = value
@@ -138,7 +143,7 @@ class ScanRunDirs(DirectoryAction):
                 try:
                     min_time = min(info.job_times.values())
                     max_time = max(info.job_times.values())
-                    avg_time = sum(info.job_times.values())/len(info.job_times.values())
+                    avg_time = sum(info.job_times.values()) / len(info.job_times.values())
                 except ValueError as e:
                     print(e)
                     print('Value Error thrown when saving to {} '.format(file_name))
@@ -156,6 +161,7 @@ class ScanRunDirs(DirectoryAction):
         run_info = RunInfo()
 
         run_info.collect_time = self.find_collect_time(status_path)
+        run_info.submit_time = self.find_submit_time(status_path)
 
         with open(status_path) as fp:
             var = [self.remove_multiple_spaces(row).strip() for row in fp if (row[0] != '#')]
@@ -210,6 +216,56 @@ class ScanRunDirs(DirectoryAction):
             if o.startswith(Const.status_file_prefix) and os.path.isfile(file):
                 yield file
 
+    def find_submit_time(self, file_path):
+        last_start = self.find_last_start_time(file_path)
+        submission_time = self.find_submission(os.path.dirname(file_path))
+        return (last_start - submission_time).seconds
+
+    def find_last_start_time(self, file_path):
+        header_pattern = r".*?START AND END OF JOBS EXECUTION"
+        time_pattern = r"#\s+\d\s+(.{19})"
+        end_pattern = r".*?EXECUTION TIME IN SECONDS"
+
+        header_regex = re.compile(header_pattern)
+        submit_time_regex = re.compile(time_pattern)
+        end_regex = re.compile(end_pattern)
+
+        class RegexAction(Enum):
+            FIND_HEADER = header_regex
+            FIND_START_TIME = submit_time_regex
+
+        submit_time = []
+        regex_action = RegexAction.FIND_HEADER
+        with open(file_path) as fp:
+            for row in fp:
+                if regex_action.value.match(row):
+                    if regex_action == RegexAction.FIND_HEADER:
+                        regex_action = RegexAction.FIND_START_TIME
+
+                if regex_action.value.match(row):
+                    if regex_action == RegexAction.FIND_START_TIME:
+                        submit_time.append(regex_action.value.findall(row)[0])
+
+                if end_regex.match(row):
+                    if len(submit_time) == 0:
+                        raise ValueError("no start time before EXECUTION TIME IN SECONDS header: {}".format(file_path))
+                    submit_time.sort()
+                    return parser.parse(submit_time[-1])
+
+            raise ValueError("start time not found: {}".format(file_path))
+
+    def find_submission(self, dir_name):
+        submission_pattern = r"Submission time:\s+(.{19})"
+        submission_regex = re.compile(submission_pattern)
+
+        submission_log_file = os.path.join(dir_name, Const.submission_log)
+
+        with open(submission_log_file) as fp:
+            for row in fp:
+                if submission_regex.match(row):
+                    return parser.parse(submission_regex.findall(row)[0])
+        raise ValueError("submission time not found: {}".format(submission_log_file))
+
 
 class ScanThreadsDir(DirectoryAction):
     def is_valid_subdirectory(self, dir_name):
@@ -220,13 +276,14 @@ class ScanThreadsDir(DirectoryAction):
         results = []
 
         for d in self.get_valid_directories():
-            min_time, max_time, avg_time, collect_time = self.read_run_csv_file(d)
+            min_time, max_time, avg_time, collect_time, submit_time = self.read_run_csv_file(d)
             thread_num = Utils.extract_thread_number(d)
             results.append({'threads_number': thread_num,
                             'minimum': self.average_from_list(min_time),
                             'maximum': self.average_from_list(max_time),
                             'average': self.average_from_list(avg_time),
                             'collect_time': self.average_from_list(collect_time),
+                            'submit_time': self.average_from_list(submit_time)
                             })
         self.save_average_values_to_csv(results)
 
@@ -238,22 +295,24 @@ class ScanThreadsDir(DirectoryAction):
             min_time = []
             avg_time = []
             collect_time = []
+            submit_time = []
             for row in reader:
                 max_time.append(float(row['maximum']))
                 min_time.append(float(row['minimum']))
                 avg_time.append(float(row['average']))
                 collect_time.append(float(row['collect_time']))
-        return min_time, max_time, avg_time, collect_time
+                submit_time.append(float(row['submit_time']))
+        return min_time, max_time, avg_time, collect_time, submit_time
 
     def average_from_list(self, _list):
         if len(_list) == 0:
             return 0
-        return sum(_list)/len(_list)
+        return sum(_list) / len(_list)
 
     def save_average_values_to_csv(self, results):
         result_file = os.path.join(self.current_dir, Const.particles_result_csv)
         with open(result_file, 'w') as csv_file:
-            fieldnames = ['threads_number', 'minimum', 'maximum', 'average', 'collect_time']
+            fieldnames = ['threads_number', 'minimum', 'maximum', 'average', 'collect_time', 'submit_time']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
             for res in results:
@@ -271,7 +330,7 @@ class RemoveResultThreadCSV(DirectoryAction):
 
 
 class ScanParticlesDir(DirectoryAction):
-    results_directory = 'stats'
+    results_directory = 'stats3'
 
     def is_valid_subdirectory(self, dir_name):
         return dir_name.startswith(Const.particles_prefix)
@@ -310,7 +369,7 @@ class Runner:
         run_dir_scanners = [RemoveResultRunCSV(), ScanRunDirs()]
         thread_dir_scanners = [RemoveResultThreadCSV(), ScanThreadsDir(run_dir_scanners)]
         particles_dir_scanners = ScanParticlesDir(thread_dir_scanners)
-        # particles_dir_scanners.set_result_directory('results/stats')
+        # particles_dir_scanners.set_result_directory('results/stats3')
         particles_dir_scanners.run(experiment_directory)
 
     @staticmethod
