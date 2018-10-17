@@ -15,6 +15,12 @@ liczba czastek: 10 000 000
 wykres: https://plot.ly/~Kudy/2
 czasy: 12:13 (100 000 czasteczek) 3:20 (25 000) 1:47 (12 903)
 
+liczba czastek: 20 000 000
+wykres: https://plot.ly/~leskiw77/19
+
+liczba czastek: 40 000 000
+wykres: https://plot.ly/~leskiw77/21
+
 liczba czastek: 50 000 000
 wykres: https://plot.ly/~Kudy/4
 czasy: 58:40 (500 000 czasteczek) 14:41 (125 000) 9:34 (64 516)
