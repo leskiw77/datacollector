@@ -1,0 +1,26 @@
+100 threads:
+-rw-r--r--   1 plgleskiw plgrid  25K 10-22 10:31 ex_cyl0001.bdo
+-rw-r--r--   1 plgleskiw plgrid  819 10-22 10:21 for017
+-rw-r--r--   1 plgleskiw plgrid   93 10-22 10:31 for0280001
+-rw-r--r--   1 plgleskiw plgrid  384 10-22 10:31 info.log
+-rwxr-x---   1 plgleskiw plgrid 2,2K 10-22 10:09 run.sh
+-rw-r--r--   1 plgleskiw plgrid 160K 10-22 10:31 shieldhit0001.log
+
+250 threads:
+-rw-r--r--   1 plgleskiw plgrid  25K 10-22 10:29 ex_cyl0001.bdo
+-rw-r--r--   1 plgleskiw plgrid  819 10-22 10:25 for017
+-rw-r--r--   1 plgleskiw plgrid   93 10-22 10:29 for0280001
+-rw-r--r--   1 plgleskiw plgrid  384 10-22 10:29 info.log
+-rwxr-x---   1 plgleskiw plgrid 2,2K 10-22 10:09 run.sh
+-rw-r--r--   1 plgleskiw plgrid 147K 10-22 10:29 shieldhit0001.log
+
+500 threads:
+-rw-r--r--   1 plgleskiw plgrid  25K 10-22 11:14 ex_cyl0001.bdo
+-rw-r--r--   1 plgleskiw plgrid  819 10-22 11:12 for017
+-rw-r--r--   1 plgleskiw plgrid   93 10-22 11:12 for0280001
+-rw-r--r--   1 plgleskiw plgrid  384 10-22 11:14 info.log
+-rwxr-x---   1 plgleskiw plgrid 2,2K 10-22 10:09 run.sh
+-rw-r--r--   1 plgleskiw plgrid 144K 10-22 11:14 shieldhit0001.log
+
+wykres:
+https://plot.ly/~leskiw77/23
