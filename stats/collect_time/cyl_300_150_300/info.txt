@@ -1,0 +1,6 @@
+-rw-r--r--   1 plgleskiw plgrid 103M 10-24 23:42 ex_cyl0001.bdo
+-rw-r--r--   1 plgleskiw plgrid  819 10-24 23:38 for017
+-rw-r--r--   1 plgleskiw plgrid   93 10-24 23:42 for0280001
+-rw-r--r--   1 plgleskiw plgrid  384 10-24 23:42 info.log
+-rwxr-x---   1 plgleskiw plgrid 2,2K 10-24 23:37 run.sh
+-rw-r--r--   1 plgleskiw plgrid 148K 10-24 23:42 shieldhit0001.log
