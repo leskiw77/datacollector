@@ -1,0 +1,6 @@
+-rw-r--r--   1 plgkudy plgrid 138M Oct 25 10:10 ex_zmsh0001.bdo
+-rw-r--r--   1 plgkudy plgrid  819 Oct 25 10:06 for017
+-rw-r--r--   1 plgkudy plgrid   93 Oct 25 10:10 for0280001
+-rw-r--r--   1 plgkudy plgrid  384 Oct 25 10:10 info.log
+-rwxr-x---   1 plgkudy plgrid 2.2K Oct 25 09:52 run.sh
+-rw-r--r--   1 plgkudy plgrid 147K Oct 25 10:10 shieldhit0001.log
