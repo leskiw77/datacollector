@@ -2,7 +2,7 @@ from pandas import DataFrame
 from sklearn import linear_model
 import csv
 
-result_file_path = 'stats/collect_time/fitFunction/results.csv'
+result_file_path = 'results.csv'
 
 Results = {
     'threads_number': [],
