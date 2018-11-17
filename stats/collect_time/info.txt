@@ -9,4 +9,6 @@ https://plot.ly/~Kudy/17/
 
 CYL dla cp:
 https://plot.ly/~Kudy/25/
- 
+
+CYL dla plotadata:
+https://plot.ly/~Kudy/27/
