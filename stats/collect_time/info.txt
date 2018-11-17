@@ -6,3 +6,7 @@ https://plot.ly/~Kudy/13
 
 DENSITY/SIZE:
 https://plot.ly/~Kudy/17/
+
+CYL dla cp:
+https://plot.ly/~Kudy/25/
+ 
