@@ -12,3 +12,6 @@ https://plot.ly/~Kudy/25/
 
 CYL dla plotadata:
 https://plot.ly/~Kudy/27/
+
+Rozmiar z podzialem na 10 i bez podzialu:
+https://plot.ly/~Kudy/29/
